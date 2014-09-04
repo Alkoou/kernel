@@ -305,7 +305,7 @@ _:
 ;;  Flash must be unlocked.
 copySectorToSwap:
     call eraseSwapSector
-
+    
     push bc
     ld b, a
     push af
@@ -314,6 +314,7 @@ copySectorToSwap:
     push de
     push hl
         di
+        ld a, b
         and 0b11111100
         push hl
         push bc

@@ -175,7 +175,50 @@ reboot:
     call lcdDelay
     out (PORT_LCD_CMD), a ; Contrast
 #endif
-
+    
+    ; flash test START
+    ; ###################
+    ; HOW TO RUN THE TEST
+    ; ###################
+    ;
+    ; 1°) Turn on the calc. A garbled screen should appear.
+    ; 2°) Press [clear].
+    ; 3°) Wait 10 seconds. If, in the meanwhile, any single pixel of the screen changes, something went wrong. Report at https://github.com/KnightOS/kernel/issues/132
+    ; 4°) After waiting 10 seconds, press [enter] to get to KnightOS normally.
+    ;
+    call setLegacyLcdMode
+    
+    call unlockFlash
+    ld iy, 0
+    call fastCopy_skipCheck
+    
+waitLoop1:
+    ld a, 0xfd
+    out (1), a
+    .dw 0, 0
+    in a, (1)
+    bit 6, a
+    jr nz, waitLoop1
+    
+    xor a
+    call copySectorToSwap
+    
+    ld a, swapSector
+    out (6), a
+    ld iy, $4000
+    call fastCopy_skipCheck
+    
+waitLoop2:
+    ld a, 0xfd
+    out (1), a
+    .dw 0, 0
+    in a, (1)
+    rra
+    jr c, waitLoop2
+    
+    call lockFlash
+    ; flash test STOP
+    
     ld de, init
     call fileExists
     ld a, panic_init_not_found
